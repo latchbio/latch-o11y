@@ -15,7 +15,7 @@ from opentelemetry.trace import Tracer
 from opentelemetry.trace.span import INVALID_SPAN, INVALID_SPAN_CONTEXT, Span
 from structlog.types import EventDict, WrappedLogger
 
-from latch_python_config.config import LoggingMode, config
+from latch_config.config import LoggingMode, config
 
 
 def add_timestamp(logger: WrappedLogger, name: str, x: EventDict) -> EventDict:

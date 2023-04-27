@@ -206,15 +206,15 @@ plugins = ["setuptools"]
 requirements-deprecated-finder = ["pip-api", "pipreqs"]
 
 [[package]]
-name = "latch-python-config"
-version = "0.1.1"
+name = "latch-config"
+version = "0.1.0"
 description = "Shared config for latch python backend services"
 category = "main"
 optional = false
 python-versions = ">=3.11,<4.0"
 files = [
-    {file = "latch_python_config-0.1.1-py3-none-any.whl", hash = "sha256:9398e5c80610dd2840882481cc37a4731c8f8d97a36f9d8b2f260c4c33d9980f"},
-    {file = "latch_python_config-0.1.1.tar.gz", hash = "sha256:50642e7869d2befb166766cb7a13577a95bd2318c00a8dda056fb75c91d2d6c7"},
+    {file = "latch_config-0.1.0-py3-none-any.whl", hash = "sha256:c6fb59039cc5fb6128c918b37b1bb3b399c90d3814a7792c2451e612127da8b2"},
+    {file = "latch_config-0.1.0.tar.gz", hash = "sha256:c428153abcd9702a915556ca9df746d151b18e735d1b8326a93a49ee5913c3db"},
 ]
 
 [[package]]
@@ -679,4 +679,4 @@ testing = ["big-O", "flake8 (<5)", "jaraco.functools", "jaraco.itertools", "more
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "d73bca7e1101c47be8399796e1c6d680a47510de20aef5682241d7370c075d7a"
+content-hash = "bbe9b2b99fde7e30e010a80ce1957b382d0cece449e8ab09ff09a1db29d6c0b6"
