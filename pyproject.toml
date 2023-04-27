@@ -1,0 +1,43 @@
+[tool.poetry]
+name = "latch-python-o11y"
+version = "0.1.0"
+description = "Observability for latch python backend services"
+authors = ["Max Smolin <max@latch.bio>"]
+license = "CC0 1.0"
+readme = "README.md"
+packages = [{include = "latch_python_o11y"}]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+latch-python-config = "^0.1.1"
+opentelemetry-api = "^1.15.0"
+opentelemetry-sdk = "^1.15.0"
+opentelemetry-exporter-otlp-proto-grpc = "^1.15.0"
+orjson = "^3.8.5"
+structlog = "^22.3.0"
+
+[tool.poetry.dev-dependencies]
+black = "^22.12.0"
+isort = "^5.11.4"
+rich = "^13.2.0"
+ruff = "^0.0.227"
+
+[tool.black]
+preview = true
+target-version = ["py311"]
+
+[tool.isort]
+profile = "black"
+
+[tool.pyright]
+reportUnknownArgumentType = "none"
+reportUnknownLambdaType = "none"
+reportUnknownMemberType = "none"
+reportUnknownParameterType = "none"
+reportUnknownVariableType = "none"
+
+reportUnusedImport = "warning"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
