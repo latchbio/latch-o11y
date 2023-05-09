@@ -1,11 +1,13 @@
 import functools
 import inspect
+from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Awaitable, Callable, Concatenate, ParamSpec, TypeAlias, TypeVar
 
 import orjson
 import structlog as slog
+from latch_config.config import DatadogConfig, LoggingMode, read_config
 from opentelemetry import trace
 from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
 from opentelemetry.sdk.resources import Attributes, LabelValue, Resource
@@ -15,7 +17,14 @@ from opentelemetry.trace import Tracer
 from opentelemetry.trace.span import INVALID_SPAN, INVALID_SPAN_CONTEXT, Span
 from structlog.types import EventDict, WrappedLogger
 
-from latch_config.config import LoggingMode, config
+
+@dataclass(frozen=True)
+class Config:
+    datadog: DatadogConfig
+    logging_mode: LoggingMode = LoggingMode.console_json
+
+
+config = read_config(Config)
 
 
 def add_timestamp(logger: WrappedLogger, name: str, x: EventDict) -> EventDict:
