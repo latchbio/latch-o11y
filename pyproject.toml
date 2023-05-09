@@ -9,7 +9,7 @@ packages = [{include = "latch_o11y"}]
 
 [tool.poetry.dependencies]
 python = "^3.11"
-latch-config = "^0.1.1"
+latch-config = "^0.1.3"
 opentelemetry-api = "^1.15.0"
 opentelemetry-sdk = "^1.15.0"
 opentelemetry-exporter-otlp-proto-grpc = "^1.15.0"
@@ -28,6 +28,33 @@ target-version = ["py311"]
 
 [tool.isort]
 profile = "black"
+
+[tool.ruff]
+pydocstyle = { convention = "google" }
+extend-select = ["W", "D", "U", "N", "C", "B", "A", "T", "Q", "M"]
+extend-ignore = [
+  "A002",
+  "A003",
+
+  "E402",
+  "E501",
+  "E741",
+
+  "C408",
+  "C901",
+
+  "T201",
+
+  "D415",
+
+  "D100",
+  "D101",
+  "D102",
+  "D103",
+  "D104",
+  "D105",
+  "D107",
+]
 
 [tool.pyright]
 reportUnknownArgumentType = "none"
