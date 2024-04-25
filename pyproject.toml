@@ -1,60 +1,155 @@
-[tool.poetry]
+[project]
 name = "latch-o11y"
-version = "0.1.4"
+version = "0.1.5"
 description = "Observability for latch python backend services"
-authors = ["Max Smolin <max@latch.bio>"]
-license = "CC0 1.0"
+authors = [{ name = "maximsmol", email = "max@latch.bio" }]
+dependencies = [
+    "latch-config>=0.1.5",
+    "opentelemetry-api>=1.15.0",
+    "opentelemetry-sdk>=1.15.0",
+    "opentelemetry-exporter-otlp-proto-grpc>=1.15.0",
+    "orjson>=3.8.5",
+    "structlog>=22.3.0",
+]
+requires-python = "==3.11.*"
 readme = "README.md"
-packages = [{include = "latch_o11y"}]
+packages = [{ include = "latch_o11y" }]
+license = { text = "CC0-1.0" }
 
-[tool.poetry.dependencies]
-python = "^3.11"
-latch-config = "^0.1.5"
-opentelemetry-api = "^1.15.0"
-opentelemetry-sdk = "^1.15.0"
-opentelemetry-exporter-otlp-proto-grpc = "^1.15.0"
-orjson = "^3.8.5"
-structlog = "^22.3.0"
+[build-system]
+requires = ["pdm-backend"]
+build-backend = "pdm.backend"
 
-[tool.poetry.dev-dependencies]
-black = "^22.12.0"
-isort = "^5.11.4"
-rich = "^13.2.0"
-ruff = "^0.0.227"
-
-[tool.black]
-preview = true
-target-version = ["py311"]
-
-[tool.isort]
-profile = "black"
+[tool.pdm.dev-dependencies]
+dev = [
+    "ruff>=0.4.2",
+    "rich>=13.7.1",
+]
 
 [tool.ruff]
 pydocstyle = { convention = "google" }
-extend-select = ["W", "D", "U", "N", "C", "B", "A", "T", "Q", "M"]
-extend-ignore = [
-  "A002",
-  "A003",
-
-  "E402",
-  "E501",
-  "E741",
-
-  "C408",
-  "C901",
-
-  "T201",
-
-  "D415",
-
-  "D100",
-  "D101",
-  "D102",
-  "D103",
-  "D104",
-  "D105",
-  "D107",
+extend-select = [
+    "F",
+    "E",
+    "W",
+    # "C90",
+    "I",
+    "N",
+    "D",
+    "UP",
+    "YTT",
+    "ANN",
+    "ASYNC",
+    "TRIO",
+    "S",
+    # "BLE", # `raise x from y` does not work
+    "FBT",
+    "B",
+    "A",
+    # "COM",
+    # "CPY",
+    "C4",
+    "DTZ",
+    "T10",
+    "DJ",
+    # "EM",
+    "EXE",
+    "FA",
+    "ISC",
+    "ICN",
+    "G",
+    "INP",
+    "PIE",
+    "T20",
+    "PYI",
+    "PT",
+    "Q",
+    "RSE",
+    "RET",
+    "SLF",
+    "SLOT",
+    "SIM",
+    "TID",
+    "TCH",
+    "INT",
+    "ARG",
+    "PTH",
+    "TD",
+    # "FIX",
+    # "ERA",
+    "PD",
+    "PGH",
+    "PL",
+    "TRY",
+    "FLY",
+    "NPY",
+    "AIR",
+    "PERF",
+    "FURB",
+    "LOG",
+    "RUF",
 ]
+ignore = [
+    "A002",
+    "A003",
+
+    "ANN101",
+    "ANN102",
+
+    "E402",
+    "E501",
+    "E741",
+
+    "C408",
+    "C901",
+
+    "T201",
+
+    "D415",
+
+    "SIM108",
+
+    "S101",
+    "S603",
+
+    "N807",
+
+    "D100",
+    "D101",
+    "D102",
+    "D103",
+    "D104",
+    "D105",
+    "D106",
+    "D107",
+
+    "TRY003",
+    "TRY300",
+    "TRY301",
+
+    "FLY002",
+
+    "PLW2901",
+    "PLW0603",
+
+    "PLR0911",
+    "PLR0912",
+    "PLR0913",
+    "PLR0914",
+    "PLR0915",
+    "PLR0916",
+    "PLR0917",
+    "PLR2004",
+
+    "TD001",
+    "TD003",
+    "TD006",
+
+    "TID252",
+]
+
+[tool.ruff.format]
+skip-magic-trailing-comma = true
 
 [tool.pyright]
 reportUnknownArgumentType = "none"
@@ -64,7 +159,3 @@ reportUnknownParameterType = "none"
 reportUnknownVariableType = "none"
 
 reportUnusedImport = "warning"
-
-[build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
