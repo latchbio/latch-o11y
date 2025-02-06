@@ -30,6 +30,20 @@ class NoopSpanExporter(SpanExporter):
         return True
 
 
+def format_console_span(x: ReadableSpan) -> str:
+    ctx = x.context
+
+    parent_ctx = x.parent
+    parent_id = "      root      "
+    if parent_ctx is not None:
+        parent_id = f"{parent_ctx.span_id:x}"
+
+    s_id = "?" * 16
+    if ctx is not None:
+        s_id = f"{ctx.span_id:x}"
+    return f"<{parent_id}> |- <{s_id}> {x.name}\n"
+
+
 @dataclass(frozen=True)
 class Config:
     datadog: DatadogConfig
@@ -41,7 +55,7 @@ config = read_config(Config)
 app_tracer: Tracer
 
 
-def setup(*, span_exporter: Literal["otlp", "console", "noop"]) -> None:
+def setup(*, span_exporter: Literal["otlp", "console", "noop"] = "otlp") -> None:
     service_data: Attributes = {
         "service.name": config.datadog.service_name,
         "service.version": config.datadog.service_version,
@@ -53,7 +67,9 @@ def setup(*, span_exporter: Literal["otlp", "console", "noop"]) -> None:
     if span_exporter == "otlp":
         tracer_provider.add_span_processor(BatchSpanProcessor(OTLPSpanExporter()))
     elif span_exporter == "console":
-        tracer_provider.add_span_processor(SimpleSpanProcessor(ConsoleSpanExporter()))
+        tracer_provider.add_span_processor(
+            SimpleSpanProcessor(ConsoleSpanExporter(formatter=format_console_span))
+        )
     elif span_exporter == "noop":
         tracer_provider.add_span_processor(SimpleSpanProcessor(NoopSpanExporter()))
 
