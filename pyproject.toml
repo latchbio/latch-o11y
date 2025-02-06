@@ -1,6 +1,6 @@
 [project]
 name = "latch-o11y"
-version = "0.1.5"
+version = "1.0.0"
 description = "Observability for latch python backend services"
 authors = [{ name = "maximsmol", email = "max@latch.bio" }]
 dependencies = [
@@ -8,25 +8,24 @@ dependencies = [
     "opentelemetry-api>=1.15.0",
     "opentelemetry-sdk>=1.15.0",
     "opentelemetry-exporter-otlp-proto-grpc>=1.15.0",
-    "orjson>=3.8.5",
-    "structlog>=22.3.0",
 ]
 requires-python = "==3.11.*"
 readme = "README.md"
-packages = [{ include = "latch_o11y" }]
 license = { text = "CC0-1.0" }
 
 [build-system]
-requires = ["pdm-backend"]
-build-backend = "pdm.backend"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
-[tool.pdm.dev-dependencies]
-dev = [
-    "ruff>=0.4.2",
-    "rich>=13.7.1",
-]
+[tool.uv]
+dev-dependencies = ["ruff>=0.9.5"]
 
 [tool.ruff]
+target-version = "py311"
+
+[tool.ruff.lint]
+preview = true
+
 pydocstyle = { convention = "google" }
 extend-select = [
     "F",
@@ -40,7 +39,7 @@ extend-select = [
     "YTT",
     "ANN",
     "ASYNC",
-    "TRIO",
+    "ASYNC1",
     "S",
     # "BLE", # `raise x from y` does not work
     "FBT",
@@ -104,6 +103,7 @@ ignore = [
     "C901",
 
     "T201",
+    "T203",
 
     "D415",
 
@@ -132,6 +132,7 @@ ignore = [
     "PLW2901",
     "PLW0603",
 
+    "PLR0904",
     "PLR0911",
     "PLR0912",
     "PLR0913",
@@ -139,6 +140,7 @@ ignore = [
     "PLR0915",
     "PLR0916",
     "PLR0917",
+    "PLR1702",
     "PLR2004",
 
     "TD001",
@@ -146,9 +148,20 @@ ignore = [
     "TD006",
 
     "TID252",
+
+    "PD901",
+
+    "UP040",
+
+    "SIM112",
+
+    "PLC1901",
+
+    "TCH002",
 ]
 
 [tool.ruff.format]
+preview = true
 skip-magic-trailing-comma = true
 
 [tool.pyright]
