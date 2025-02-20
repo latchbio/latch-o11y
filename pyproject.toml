@@ -1,6 +1,6 @@
 [project]
 name = "latch-o11y"
-version = "1.0.0"
+version = "1.0.1"
 description = "Observability for latch python backend services"
 authors = [{ name = "maximsmol", email = "max@latch.bio" }]
 dependencies = [

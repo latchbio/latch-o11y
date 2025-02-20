@@ -7,6 +7,7 @@ from typing import Concatenate, Literal, ParamSpec, TypeAlias, TypeVar
 from latch_config.config import DatadogConfig, LoggingMode, read_config
 from opentelemetry import trace
 from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
+from opentelemetry.util.types import AttributeValue
 from opentelemetry.sdk.resources import Attributes, LabelValue, Resource
 from opentelemetry.sdk.trace import ReadableSpan, TracerProvider
 from opentelemetry.sdk.trace.export import (
@@ -171,13 +172,13 @@ def trace_app_function(f: Callable[P, T]) -> Callable[P, T]:
     return trace_function(app_tracer)(f)
 
 
-AttributesDict: TypeAlias = "dict[str, LabelValue | AttributesDict]"
+AttributesDict: TypeAlias = "dict[str, LabelValue | None | AttributesDict]"
 
 
-def dict_to_attrs(x: AttributesDict, prefix: str) -> Attributes:
+def dict_to_attrs(x: AttributesDict, prefix: str) -> dict[str, AttributeValue]:
     res: Attributes = {}
 
-    def inner(x: LabelValue | AttributesDict, prefix: str) -> None:
+    def inner(x: LabelValue | AttributesDict | None, prefix: str) -> None:
         if isinstance(x, list):
             for i, y in enumerate(x):
                 inner(y, f"{prefix}.{i}")
