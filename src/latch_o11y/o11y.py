@@ -1,16 +1,17 @@
 import functools
 import inspect
+import sys
 from collections.abc import Awaitable, Callable, Sequence
 from dataclasses import dataclass
-import sys
 from typing import Concatenate, Literal, ParamSpec, TypeAlias, TypeVar
 
 from latch_config.config import DatadogConfig, LoggingMode, read_config
 from opentelemetry import trace
+from opentelemetry.context import Context
 from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
-from opentelemetry.util.types import AttributeValue
 from opentelemetry.sdk.resources import Attributes, LabelValue, Resource
 from opentelemetry.sdk.trace import ReadableSpan, TracerProvider
+from opentelemetry.sdk.trace import Span as SdkSpan
 from opentelemetry.sdk.trace.export import (
     BatchSpanProcessor,
     ConsoleSpanExporter,
@@ -20,14 +21,19 @@ from opentelemetry.sdk.trace.export import (
 )
 from opentelemetry.trace import Tracer
 from opentelemetry.trace.span import Span
+from opentelemetry.util.types import AttributeValue
+from typing_extensions import override
 
 
 class NoopSpanExporter(SpanExporter):
+    @override
     def export(self, spans: Sequence[ReadableSpan]) -> SpanExportResult:
         return SpanExportResult.SUCCESS
 
+    @override
     def shutdown(self) -> None: ...
 
+    @override
     def force_flush(self, timeout_millis: int = 30000) -> bool:
         return True
 
@@ -57,31 +63,83 @@ config = read_config(Config)
 app_tracer: Tracer
 
 
+class GABatchSpanProcessor(BatchSpanProcessor):
+    @override
+    def __init__(
+        self,
+        span_exporter: SpanExporter,
+        max_queue_size: int | None = None,
+        schedule_delay_millis: float | None = None,
+        max_export_batch_size: int | None = None,
+        export_timeout_millis: float | None = None,
+        *,
+        global_attributes: Attributes | None = None,
+    ) -> None:
+        self.global_attributes = global_attributes
+        super().__init__(
+            span_exporter,
+            max_queue_size,
+            schedule_delay_millis,
+            max_export_batch_size,
+            export_timeout_millis,
+        )
+
+    @override
+    def on_start(self, span: SdkSpan, parent_context: Context | None = None) -> None:
+        if self.global_attributes is not None:
+            span.set_attributes(self.global_attributes)
+        return super().on_start(span, parent_context)
+
+
+class GASimpleSpanProcessor(SimpleSpanProcessor):
+    @override
+    def __init__(
+        self, span_exporter: SpanExporter, *, global_attributes: Attributes | None
+    ) -> None:
+        self.global_attributes = global_attributes
+        super().__init__(span_exporter)
+
+    @override
+    def on_start(self, span: SdkSpan, parent_context: Context | None = None) -> None:
+        if self.global_attributes is not None:
+            span.set_attributes(self.global_attributes)
+        return super().on_start(span, parent_context)
+
+
 def setup(
     *,
     span_exporter: Literal["otlp", "console", "noop"] = "otlp",
-    resource_attrs: Attributes | None = None,
+    global_attributes: Attributes | None = None,
 ) -> None:
-    if resource_attrs is None:
-        resource_attrs = {}
-
+    # for attribute name mapping for DataDog see
+    # https://github.com/DataDog/documentation/blob/addf595d7bb5eb3240c9260b600f3374fef7717b/content/en/opentelemetry/schema_semantics/semantic_mapping.md
     service_data: Attributes = {
         "service.name": config.datadog.service_name,
         "service.version": config.datadog.service_version,
         "deployment.environment": config.datadog.deployment_environment,
-        **resource_attrs,
     }
 
     tracer_provider = TracerProvider(resource=Resource(service_data))
 
     if span_exporter == "otlp":
-        tracer_provider.add_span_processor(BatchSpanProcessor(OTLPSpanExporter()))
+        tracer_provider.add_span_processor(
+            GABatchSpanProcessor(
+                OTLPSpanExporter(), global_attributes=global_attributes
+            )
+        )
     elif span_exporter == "console":
         tracer_provider.add_span_processor(
-            SimpleSpanProcessor(ConsoleSpanExporter(formatter=format_console_span))
+            GASimpleSpanProcessor(
+                ConsoleSpanExporter(formatter=format_console_span),
+                global_attributes=global_attributes,
+            )
         )
     elif span_exporter == "noop":
-        tracer_provider.add_span_processor(SimpleSpanProcessor(NoopSpanExporter()))
+        tracer_provider.add_span_processor(
+            GASimpleSpanProcessor(
+                NoopSpanExporter(), global_attributes=global_attributes
+            )
+        )
 
     trace.set_tracer_provider(tracer_provider)
 
@@ -91,7 +149,7 @@ def setup(
 
     frame = sys._getframe(1)
     try:
-        app_tracer = trace.get_tracer(frame.f_globals["__name__"])
+        app_tracer = trace.get_tracer(frame.f_globals["__spec__"].name)
     finally:
         del frame
 
@@ -159,7 +217,7 @@ def _trace_function_async(
     def decorator(f: Callable[P, Awaitable[T]]) -> Callable[P, Awaitable[T]]:
         @_trace_function_with_span_async(tracer)
         @functools.wraps(f)
-        async def inner(span: Span, *args: P.args, **kwargs: P.kwargs) -> T:
+        async def inner(_span: Span, *args: P.args, **kwargs: P.kwargs) -> T:
             return await f(*args, **kwargs)
 
         return inner
