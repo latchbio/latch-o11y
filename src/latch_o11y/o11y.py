@@ -2,6 +2,7 @@ import functools
 import inspect
 from collections.abc import Awaitable, Callable, Sequence
 from dataclasses import dataclass
+import sys
 from typing import Concatenate, Literal, ParamSpec, TypeAlias, TypeVar
 
 from latch_config.config import DatadogConfig, LoggingMode, read_config
@@ -56,11 +57,19 @@ config = read_config(Config)
 app_tracer: Tracer
 
 
-def setup(*, span_exporter: Literal["otlp", "console", "noop"] = "otlp") -> None:
+def setup(
+    *,
+    span_exporter: Literal["otlp", "console", "noop"] = "otlp",
+    resource_attrs: Attributes | None = None,
+) -> None:
+    if resource_attrs is None:
+        resource_attrs = {}
+
     service_data: Attributes = {
         "service.name": config.datadog.service_name,
         "service.version": config.datadog.service_version,
         "deployment.environment": config.datadog.deployment_environment,
+        **resource_attrs,
     }
 
     tracer_provider = TracerProvider(resource=Resource(service_data))
@@ -79,7 +88,12 @@ def setup(*, span_exporter: Literal["otlp", "console", "noop"] = "otlp") -> None
     global app_tracer
     # todo(maximsmol): setup trace sampling based on datadog settings
     # todo(maximsmol): port over stuff from https://github.com/open-telemetry/opentelemetry-python-contrib/blob/934af7ea4f9b1e0294ced6a014d6eefdda156b2b/exporter/opentelemetry-exporter-datadog/src/opentelemetry/exporter/datadog/exporter.py
-    app_tracer = trace.get_tracer(__name__)
+
+    frame = sys._getframe(1)
+    try:
+        app_tracer = trace.get_tracer(frame.f_globals["__name__"])
+    finally:
+        del frame
 
 
 T = TypeVar("T")
