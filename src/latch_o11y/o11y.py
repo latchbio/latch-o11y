@@ -250,7 +250,10 @@ AttributesDict: TypeAlias = "dict[str, LabelValue | None | AttributesDict]"
 def dict_to_attrs(x: AttributesDict, prefix: str) -> dict[str, AttributeValue]:
     res: Attributes = {}
 
-    def inner(x: LabelValue | AttributesDict | None, prefix: str) -> None:
+    # note: quoted because `AttributesDict` is a string forward reference, so
+    # evaluating this annotation at runtime raises `TypeError` now that
+    # `LabelValue` is a PEP 604 union (`types.UnionType` rejects `| str`)
+    def inner(x: "LabelValue | AttributesDict | None", prefix: str) -> None:
         if isinstance(x, list):
             for i, y in enumerate(x):
                 inner(y, f"{prefix}.{i}")
