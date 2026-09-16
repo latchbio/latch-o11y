@@ -250,7 +250,7 @@ AttributesDict: TypeAlias = "dict[str, LabelValue | None | AttributesDict]"
 def dict_to_attrs(x: AttributesDict, prefix: str) -> dict[str, AttributeValue]:
     res: Attributes = {}
 
-    def inner(x: LabelValue | AttributesDict | None, prefix: str) -> None:
+    def inner(x: "LabelValue | AttributesDict | None", prefix: str) -> None:
         if isinstance(x, list):
             for i, y in enumerate(x):
                 inner(y, f"{prefix}.{i}")
